@@ -90,6 +90,8 @@ int findFirstFreeIndex(int eepromAddress) {
     return -1;
 }
 
+
+//-----------------------------------------------------------------> new utilities functions
 bool memoryEqual(int eepromAddress1, int eepromAddress2) {
   int lastFreeIndex = findFirstFreeIndex(eepromAddress1);
   if (findFirstFreeIndex(eepromAddress2) == lastFreeIndex) {
@@ -276,4 +278,68 @@ int getFingerprintIDez() {
 }
 
 
+//---------------------------------------------------->
+
+void printNumberingCredential(int EEPROM_ADDRESS){
+  int passwords = numberPasswordSaved(EEPROM_ADDRESS);
+  Credential temp;
+  for(int a = 0; a < passwords; a++  ){
+    Serial.println("");
+    readCredentialFromEEPROM(temp, a*CREDENTIAL_SIZE, EEPROM_ADDRESS );
+    Serial.println("Credential saved at:" +  String(a));
+    printCredential (temp);
+
+  }
+
+
+}
+
+
+void deleteCredentials(int index, int EEPROM_ADDRESS){
+  Credential temp;
+  readCredentialFromEEPROM(temp, findFirstFreeIndex(EEPROM_ADDRESS)-CREDENTIAL_SIZE, EEPROM_ADDRESS);
+  int lastIndex = (numberPasswordSaved(EEPROM_ADDRESS)-1);
+  
+  for(int a=0; a<CREDENTIAL_SIZE; a++){ //delete first credential
+      writeToEEPROM(a+(index*CREDENTIAL_SIZE), ' ', EEPROM_ADDRESS);
+    }
+    
+    //Serial.println("lastIndex: " + String(lastIndex));
+  for(int a=0; a<CREDENTIAL_SIZE; a++){ //delete last credential
+    writeToEEPROM(a+(lastIndex*CREDENTIAL_SIZE) , ' ', EEPROM_ADDRESS);
+  }
+
+  if(index != lastIndex){writeCredentialToEEPROM(temp, index*CREDENTIAL_SIZE, EEPROM_ADDRESS);}
+}
+
+
+
+
+
+
+bool isNumber(String str) {
+  for (unsigned int i = 0; i < str.length(); i++) {
+    if (!isDigit(str.charAt(i))) {
+      return false;
+    }
+  }
+  return true;
+}
+
+
+void copyAintoB(int eepromAddressA, int eepromAddressB){
+  for(long i = 0; i < EEPROM_SIZE_BYTES; i++){
+    writeToEEPROM(i, readFromEEPROM(i, eepromAddressA), eepromAddressB);
+  }
+
+}
+
+
+void printEEPROM(int eepromAddress){
+  Serial.println("reading eeprom: " + String(eepromAddress));
+  for(long i = 0; i < EEPROM_SIZE_BYTES; i++){
+    Serial.print(char(readFromEEPROM(i, eepromAddress)));
+  }
+  Serial.println("");
+}
 

@@ -56,6 +56,12 @@ int numberPasswordSaved(int EEPROM_ADDRESS);
 void readJoystick(int debaounceDelay);
 void updateView(int arrow);
 void loadPasswords(int request_index, int max_passwords, Credential* saveCredentials);
-uint8_t getFingerprintID(); //from the example provided by the manifacturer
-int getFingerprintIDez(); //from the example provided by the manifacturer
-#endif // MYLIBPASSWORDINJECTOR_H
+uint8_t getFingerprintID();
+int getFingerprintIDez();
+void printNumberingCredential(int EEPROM_ADDRESS);
+void deleteCredentials(int index, int EEPROM_ADDRESS);
+bool isNumber(String str);
+void copyAintoB(int eepromAddressA, int eepromAddressB);
+void printEEPROM(int eepromAddress);
+
+#endif // PASSWORD_INJECTOR_UTILITY_FUNCTIONS_H
