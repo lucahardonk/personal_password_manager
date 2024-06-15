@@ -25,7 +25,7 @@ void loop() {
     String data = mySerial.readStringUntil('\n');
     
     // Print the received data to the Serial Monitor for debugging
-    Serial.print(data);
+    //Serial.print(data);
     
     // Send the received data as keyboard input
     Keyboard.print(data);
