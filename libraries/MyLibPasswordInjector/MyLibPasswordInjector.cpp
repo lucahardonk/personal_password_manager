@@ -81,7 +81,7 @@ int findFirstFreeIndex(int eepromAddress) {
     // Iterate through each page
     for (unsigned int page = 0; page < NUMBER_OF_PASSWORDS; page++) {
         char firstbyte = readFromEEPROM(page * CREDENTIAL_SIZE, eepromAddress);
-        Serial.print("char found: "); Serial.println(firstbyte);
+        //Serial.print("char found: "); Serial.println(firstbyte);
         if (firstbyte == ' ') {
             return page * CREDENTIAL_SIZE; // Return the index of the first page with an empty title
         }
