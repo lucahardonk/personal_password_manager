@@ -277,9 +277,6 @@ int getFingerprintIDez() {
   return finger.fingerID;
 }
 
-
-//---------------------------------------------------->
-
 void printNumberingCredential(int EEPROM_ADDRESS){
   int passwords = numberPasswordSaved(EEPROM_ADDRESS);
   Credential temp;
