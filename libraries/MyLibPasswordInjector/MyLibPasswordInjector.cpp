@@ -160,7 +160,7 @@ void readJoystick(int debounceDelay) {
             lcd.setCursor(0, 0);
             lcd.print("scan fingerprint");
             // Ask for fingerprint
-            while(getFingerprintID() == 2);
+            while(getFingerprintIDez() == 2);
             Serial.println("Injecting Username");
             mySerial.println(currentPasswordInDisplay.username);
             tone(BUZZERPIN, 1500, 500);
@@ -170,7 +170,7 @@ void readJoystick(int debounceDelay) {
             lcd.setCursor(0, 0);
             lcd.print("scan fingerprint");
             // Ask for authentication
-            while(getFingerprintID() == 2);
+            while(getFingerprintIDez() == 2);
             Serial.println("Injecting Password");
             mySerial.println(currentPasswordInDisplay.password);
             tone(BUZZERPIN, 1500, 500);
