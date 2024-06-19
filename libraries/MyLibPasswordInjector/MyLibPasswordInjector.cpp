@@ -1,13 +1,13 @@
 #include "MyLibPasswordInjector.h"
 
-
-
+// Function to erase the entire EEPROM
 void eraseEEPROM(int eepromAddress) {
     Serial.println("Starting EEPROM erase...");
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print("erasing all memory");
 
+    // Loop through each byte of EEPROM and write a space character
     for(unsigned int i = 0; i < EEPROM_SIZE_BYTES; i++) {
         writeToEEPROM(i, ' ', eepromAddress); 
     }
@@ -15,6 +15,7 @@ void eraseEEPROM(int eepromAddress) {
     Serial.println("Erase complete");
 }
 
+// Function to replace all whitespace characters in a string with underscores
 void replaceWhitespaceWithUnderscore(String &inputString) {
     for (int i = 0; i < inputString.length(); i++) {
         if (inputString[i] == ' ') {
@@ -23,11 +24,13 @@ void replaceWhitespaceWithUnderscore(String &inputString) {
     }
 }
 
+// Function to safely copy a C-string with a maximum length
 void safeStrCopy(char* dest, const char* src, size_t maxLen) {
     strncpy(dest, src, maxLen - 1);
     dest[maxLen - 1] = '\0'; // Ensure null termination
 }
 
+// Function to write a byte of data to a specific address in EEPROM
 void writeToEEPROM(int address, byte data, int eepromAddress) {
     Wire.beginTransmission(eepromAddress); // Start communication with EEPROM
     Wire.write((int)(address >> 8));       // High byte of address
@@ -37,6 +40,7 @@ void writeToEEPROM(int address, byte data, int eepromAddress) {
     delay(5);                              // Delay for EEPROM to finish writing
 }
 
+// Function to read a byte of data from a specific address in EEPROM
 byte readFromEEPROM(int address, int eepromAddress) {
     byte data = 0;                          // Variable to store read data
     Wire.beginTransmission(eepromAddress);   // Start communication with EEPROM
@@ -45,11 +49,12 @@ byte readFromEEPROM(int address, int eepromAddress) {
     Wire.endTransmission(false);             // End transmission with repeated start
     Wire.requestFrom(eepromAddress, 1);      // Request 1 byte of data from EEPROM
     if (Wire.available()) {
-        data = Wire.read();                    // Read the data
+        data = Wire.read();                  // Read the data
     }
     return data;                             // Return read data
 }
 
+// Function to write a Credential structure to EEPROM
 void writeCredentialToEEPROM(Credential cred, int startAddress, int eepromAddress) {
     byte* data = (byte*)&cred;
     for (int i = 0; i < sizeof(Credential); i++) {
@@ -57,6 +62,7 @@ void writeCredentialToEEPROM(Credential cred, int startAddress, int eepromAddres
     }
 }
 
+// Function to read a Credential structure from EEPROM
 void readCredentialFromEEPROM(Credential &cred, int startAddress, int eepromAddress) {
     byte* data = (byte*)&cred;
     for (int i = 0; i < sizeof(Credential); i++) {
@@ -68,6 +74,7 @@ void readCredentialFromEEPROM(Credential &cred, int startAddress, int eepromAddr
     cred.password[sizeof(cred.password) - 1] = '\0';
 }
 
+// Function to print the details of a Credential structure to Serial
 void printCredential(const Credential& credential) {
     Serial.print("Title: ");
     Serial.println(credential.title);
@@ -77,6 +84,7 @@ void printCredential(const Credential& credential) {
     Serial.println(credential.password);
 }
 
+// Function to find the first free index in EEPROM
 int findFirstFreeIndex(int eepromAddress) {
     // Iterate through each page
     for (unsigned int page = 0; page < NUMBER_OF_PASSWORDS; page++) {
@@ -90,253 +98,244 @@ int findFirstFreeIndex(int eepromAddress) {
     return -1;
 }
 
-
-//-----------------------------------------------------------------> new utilities functions
+// Function to check if two EEPROM memories are equal
 bool memoryEqual(int eepromAddress1, int eepromAddress2) {
-  int lastFreeIndex = findFirstFreeIndex(eepromAddress1);
-  if (findFirstFreeIndex(eepromAddress2) == lastFreeIndex) {
-    for (int i = 0; i < lastFreeIndex; i++) {
-      if (readFromEEPROM(i, EEPROM1_ADDRESS) != readFromEEPROM(i, EEPROM2_ADDRESS)) {
+    int lastFreeIndex = findFirstFreeIndex(eepromAddress1);
+    if (findFirstFreeIndex(eepromAddress2) == lastFreeIndex) {
+        for (int i = 0; i < lastFreeIndex; i++) {
+            if (readFromEEPROM(i, EEPROM1_ADDRESS) != readFromEEPROM(i, EEPROM2_ADDRESS)) {
+                return false;
+            }
+        }
+    } else {
         return false;
-      }
     }
-  } else {
-    return false;
-  }
-  return true;
+    return true;
 }
 
-
+// Function to get the number of passwords saved in EEPROM
 int numberPasswordSaved(int EEPROM_ADDRESS) {
-  int passowords_in_memory = findFirstFreeIndex(EEPROM_ADDRESS);
-  if (passowords_in_memory == -1) {
-    passowords_in_memory = NUMBER_OF_PASSWORDS;
-  } else {
-    passowords_in_memory = (passowords_in_memory) / 140;
-  }
-  return passowords_in_memory;
-}
-
-
-void readJoystick(int debaounceDelay) {
-  
-  if (analogRead(XAXISPIN) > 1000) {
-    
-    arrowPointing++;
-    updateView(arrowPointing);
-    delay(debaounceDelay);
-  } else if (analogRead(XAXISPIN) < 20) {
-    
-    arrowPointing--;
-    updateView(arrowPointing);
-    delay(debaounceDelay);
-  }
-  
-  if (analogRead(YAXISPIN) > 1000) {
-    
-    if(arrowPointing == 3){arrowPointing = 1;}
-    else{arrowPointing++;}
-    updateView(arrowPointing);
-    delay(debaounceDelay);
-  } else if (analogRead(YAXISPIN) < 20) {
-    
-    if(arrowPointing == 1){arrowPointing = 3;}
-    else{arrowPointing--;}
-    updateView(arrowPointing);
-    delay(debaounceDelay);
-  }
-  
-  if (analogRead(BUTTONPIN) < 10) {
-    if(arrowPointing == 1){
-      lcd.clear();
-      lcd.setCursor(0, 0);
-      lcd.print("scan fingerprint");
-      //ask for fingerprint
-      while(getFingerprintID() == 2);
-      Serial.println("Injecting Username");
-      mySerial.println(currentPasswordInDisplay.username);
-      tone(BUZZERPIN, 1500, 500);
-      refreshMenu = true;
+    int passwords_in_memory = findFirstFreeIndex(EEPROM_ADDRESS);
+    if (passwords_in_memory == -1) {
+        passwords_in_memory = NUMBER_OF_PASSWORDS;
+    } else {
+        passwords_in_memory = passwords_in_memory / 140;
     }
-    else if(arrowPointing == 3){
-      lcd.clear();
-      lcd.setCursor(0, 0);
-      lcd.print("scan fingerprint");
-      //ask for autentication
-      while(getFingerprintID() == 2);
-      Serial.println("Injecting Password");
-      mySerial.println(currentPasswordInDisplay.password);
-      tone(BUZZERPIN, 1500, 500);
-      refreshMenu = true;
+    return passwords_in_memory;
+}
 
+// Function to read the joystick input with a debounce delay
+void readJoystick(int debounceDelay) {
+    if (analogRead(XAXISPIN) > 1000) {
+        arrowPointing++;
+        updateView(arrowPointing);
+        delay(debounceDelay);
+    } else if (analogRead(XAXISPIN) < 20) {
+        arrowPointing--;
+        updateView(arrowPointing);
+        delay(debounceDelay);
     }
-    delay(debaounceDelay);
-  }
+
+    if (analogRead(YAXISPIN) > 1000) {
+        if(arrowPointing == 3) {
+            arrowPointing = 1;
+        } else {
+            arrowPointing++;
+        }
+        updateView(arrowPointing);
+        delay(debounceDelay);
+    } else if (analogRead(YAXISPIN) < 20) {
+        if(arrowPointing == 1) {
+            arrowPointing = 3;
+        } else {
+            arrowPointing--;
+        }
+        updateView(arrowPointing);
+        delay(debounceDelay);
+    }
+
+    if (analogRead(BUTTONPIN) < 10) {
+        if(arrowPointing == 1) {
+            lcd.clear();
+            lcd.setCursor(0, 0);
+            lcd.print("scan fingerprint");
+            // Ask for fingerprint
+            while(getFingerprintID() == 2);
+            Serial.println("Injecting Username");
+            mySerial.println(currentPasswordInDisplay.username);
+            tone(BUZZERPIN, 1500, 500);
+            refreshMenu = true;
+        } else if(arrowPointing == 3) {
+            lcd.clear();
+            lcd.setCursor(0, 0);
+            lcd.print("scan fingerprint");
+            // Ask for authentication
+            while(getFingerprintID() == 2);
+            Serial.println("Injecting Password");
+            mySerial.println(currentPasswordInDisplay.password);
+            tone(BUZZERPIN, 1500, 500);
+            refreshMenu = true;
+        }
+        delay(debounceDelay);
+    }
 }
 
-void updateView(int arrow){
-  refreshMenu = true;
-  if(arrow == -1){
-    currentPasswordIndex--;
-    arrowPointing = 0;
-  }
-  else if(arrow == 2){
-    currentPasswordIndex++;
-    arrowPointing = 0;
-  }
+// Function to update the view based on the arrow position
+void updateView(int arrow) {
+    refreshMenu = true;
+    if(arrow == -1) {
+        currentPasswordIndex--;
+        arrowPointing = 0;
+    } else if(arrow == 2) {
+        currentPasswordIndex++;
+        arrowPointing = 0;
+    }
 }
 
+// Function to load passwords from EEPROM into a given array of credentials
 void loadPasswords(int request_index, int max_passwords, Credential* saveCredentials) {
-
-  int retriveIndex = abs(request_index) % max_passwords;
-  Serial.println("1 index retrived: " + String(retriveIndex));
-  readCredentialFromEEPROM(*saveCredentials, retriveIndex * CREDENTIAL_SIZE, EEPROM1_ADDRESS);
+    int retrieveIndex = abs(request_index) % max_passwords;
+    Serial.println("1 index retrieved: " + String(retrieveIndex));
+    readCredentialFromEEPROM(*saveCredentials, retrieveIndex * CREDENTIAL_SIZE, EEPROM1_ADDRESS);
 }
 
-
+// Function to get the fingerprint ID
 uint8_t getFingerprintID() {
-  uint8_t p = finger.getImage();
-  switch (p) {
-    case FINGERPRINT_OK:
-      Serial.println("Image taken");
-      break;
-    case FINGERPRINT_NOFINGER:
-      Serial.println("No finger detected");
-      return p;
-    case FINGERPRINT_PACKETRECIEVEERR:
-      Serial.println("Communication error");
-      return p;
-    case FINGERPRINT_IMAGEFAIL:
-      Serial.println("Imaging error");
-      return p;
-    default:
-      Serial.println("Unknown error");
-      return p;
-  }
+    uint8_t p = finger.getImage();
+    switch (p) {
+        case FINGERPRINT_OK:
+            Serial.println("Image taken");
+            break;
+        case FINGERPRINT_NOFINGER:
+            Serial.println("No finger detected");
+            return p;
+        case FINGERPRINT_PACKETRECIEVEERR:
+            Serial.println("Communication error");
+            return p;
+        case FINGERPRINT_IMAGEFAIL:
+            Serial.println("Imaging error");
+            return p;
+        default:
+            Serial.println("Unknown error");
+            return p;
+    }
 
-  // OK success!
+    // OK success!
+    p = finger.image2Tz();
+    switch (p) {
+        case FINGERPRINT_OK:
+            Serial.println("Image converted");
+            break;
+        case FINGERPRINT_IMAGEMESS:
+            Serial.println("Image too messy");
+            return p;
+        case FINGERPRINT_PACKETRECIEVEERR:
+            Serial.println("Communication error");
+            return p;
+        case FINGERPRINT_FEATUREFAIL:
+            Serial.println("Could not find fingerprint features");
+            return p;
+        case FINGERPRINT_INVALIDIMAGE:
+            Serial.println("Could not find fingerprint features");
+            return p;
+        default:
+            Serial.println("Unknown error");
+            return p;
+    }
 
-  p = finger.image2Tz();
-  switch (p) {
-    case FINGERPRINT_OK:
-      Serial.println("Image converted");
-      break;
-    case FINGERPRINT_IMAGEMESS:
-      Serial.println("Image too messy");
-      return p;
-    case FINGERPRINT_PACKETRECIEVEERR:
-      Serial.println("Communication error");
-      return p;
-    case FINGERPRINT_FEATUREFAIL:
-      Serial.println("Could not find fingerprint features");
-      return p;
-    case FINGERPRINT_INVALIDIMAGE:
-      Serial.println("Could not find fingerprint features");
-      return p;
-    default:
-      Serial.println("Unknown error");
-      return p;
-  }
+    // OK converted!
+    p = finger.fingerSearch();
+    if (p == FINGERPRINT_OK) {
+        Serial.println("Found a print match!");
+    } else if (p == FINGERPRINT_PACKETRECIEVEERR) {
+        Serial.println("Communication error");
+        return p;
+    } else if (p == FINGERPRINT_NOTFOUND) {
+        Serial.println("Did not find a match");
+        return p;
+    } else {
+        Serial.println("Unknown error");
+        return p;
+    }
 
-  // OK converted!
-  p = finger.fingerSearch();
-  if (p == FINGERPRINT_OK) {
-    Serial.println("Found a print match!");
-  } else if (p == FINGERPRINT_PACKETRECIEVEERR) {
-    Serial.println("Communication error");
-    return p;
-  } else if (p == FINGERPRINT_NOTFOUND) {
-    Serial.println("Did not find a match");
-    return p;
-  } else {
-    Serial.println("Unknown error");
-    return p;
-  }
+    // found a match!
+    Serial.print("Found ID #"); Serial.print(finger.fingerID);
+    Serial.print(" with confidence of "); Serial.println(finger.confidence);
 
-  // found a match!
-  Serial.print("Found ID #"); Serial.print(finger.fingerID);
-  Serial.print(" with confidence of "); Serial.println(finger.confidence);
-
-  return finger.fingerID;
+    return finger.fingerID;
 }
 
-// returns -1 if failed, otherwise returns ID #
+// Function to get the fingerprint ID with easy return values
 int getFingerprintIDez() {
-  uint8_t p = finger.getImage();
-  if (p != FINGERPRINT_OK)  return -1;
+    uint8_t p = finger.getImage();
+    if (p != FINGERPRINT_OK)  return -1;
 
-  p = finger.image2Tz();
-  if (p != FINGERPRINT_OK)  return -1;
+    p = finger.image2Tz();
+    if (p != FINGERPRINT_OK)  return -1;
 
-  p = finger.fingerFastSearch();
-  if (p != FINGERPRINT_OK)  return -1;
+    p = finger.fingerFastSearch();
+    if (p != FINGERPRINT_OK)  return -1;
 
-  // found a match!
-  Serial.print("Found ID #"); Serial.print(finger.fingerID);
-  Serial.print(" with confidence of "); Serial.println(finger.confidence);
-  return finger.fingerID;
+    // found a match!
+    Serial.print("Found ID #"); Serial.print(finger.fingerID);
+    Serial.print(" with confidence of "); Serial.println(finger.confidence);
+    return finger.fingerID;
 }
 
-void printNumberingCredential(int EEPROM_ADDRESS){
-  int passwords = numberPasswordSaved(EEPROM_ADDRESS);
-  Credential temp;
-  for(int a = 0; a < passwords; a++  ){
-    Serial.println("");
-    readCredentialFromEEPROM(temp, a*CREDENTIAL_SIZE, EEPROM_ADDRESS );
-    Serial.println("Credential saved at:" +  String(a));
-    printCredential (temp);
-
-  }
-
-
-}
-
-
-void deleteCredentials(int index, int EEPROM_ADDRESS){
-  Credential temp;
-  readCredentialFromEEPROM(temp, findFirstFreeIndex(EEPROM_ADDRESS)-CREDENTIAL_SIZE, EEPROM_ADDRESS);
-  int lastIndex = (numberPasswordSaved(EEPROM_ADDRESS)-1);
-  
-  for(int a=0; a<CREDENTIAL_SIZE; a++){ //delete first credential
-      writeToEEPROM(a+(index*CREDENTIAL_SIZE), ' ', EEPROM_ADDRESS);
+// Function to print all credentials saved in EEPROM with numbering
+void printNumberingCredential(int EEPROM_ADDRESS) {
+    int passwords = numberPasswordSaved(EEPROM_ADDRESS);
+    Credential temp;
+    for(int a = 0; a < passwords; a++ ) {
+        Serial.println("");
+        readCredentialFromEEPROM(temp, a * CREDENTIAL_SIZE, EEPROM_ADDRESS );
+        Serial.println("Credential saved at:" +  String(a));
+        printCredential(temp);
     }
-    
+}
+
+// Function to delete a credential from EEPROM
+void deleteCredentials(int index, int EEPROM_ADDRESS) {
+    Credential temp;
+    readCredentialFromEEPROM(temp, findFirstFreeIndex(EEPROM_ADDRESS) - CREDENTIAL_SIZE, EEPROM_ADDRESS);
+    int lastIndex = (numberPasswordSaved(EEPROM_ADDRESS) - 1);
+
+    for(int a = 0; a < CREDENTIAL_SIZE; a++) { // Delete first credential
+        writeToEEPROM(a + (index * CREDENTIAL_SIZE), ' ', EEPROM_ADDRESS);
+    }
+
     //Serial.println("lastIndex: " + String(lastIndex));
-  for(int a=0; a<CREDENTIAL_SIZE; a++){ //delete last credential
-    writeToEEPROM(a+(lastIndex*CREDENTIAL_SIZE) , ' ', EEPROM_ADDRESS);
-  }
-
-  if(index != lastIndex){writeCredentialToEEPROM(temp, index*CREDENTIAL_SIZE, EEPROM_ADDRESS);}
-}
-
-
-
-
-
-
-bool isNumber(String str) {
-  for (unsigned int i = 0; i < str.length(); i++) {
-    if (!isDigit(str.charAt(i))) {
-      return false;
+    for(int a = 0; a < CREDENTIAL_SIZE; a++) { // Delete last credential
+        writeToEEPROM(a + (lastIndex * CREDENTIAL_SIZE), ' ', EEPROM_ADDRESS);
     }
-  }
-  return true;
+
+    if(index != lastIndex) {
+        writeCredentialToEEPROM(temp, index * CREDENTIAL_SIZE, EEPROM_ADDRESS);
+    }
 }
 
-
-void copyAintoB(int eepromAddressA, int eepromAddressB){
-  for(long i = 0; i < EEPROM_SIZE_BYTES; i++){
-    writeToEEPROM(i, readFromEEPROM(i, eepromAddressA), eepromAddressB);
-  }
-
+// Function to check if a string is a number
+bool isNumber(String str) {
+    for (unsigned int i = 0; i < str.length(); i++) {
+        if (!isDigit(str.charAt(i))) {
+            return false;
+        }
+    }
+    return true;
 }
 
-
-void printEEPROM(int eepromAddress){
-  Serial.println("reading eeprom: " + String(eepromAddress));
-  for(long i = 0; i < EEPROM_SIZE_BYTES; i++){
-    Serial.print(char(readFromEEPROM(i, eepromAddress)));
-  }
-  Serial.println("");
+// Function to copy contents of one EEPROM to another
+void copyAintoB(int eepromAddressA, int eepromAddressB) {
+    for(long i = 0; i < EEPROM_SIZE_BYTES; i++) {
+        writeToEEPROM(i, readFromEEPROM(i, eepromAddressA), eepromAddressB);
+    }
 }
 
+// Function to print the contents of an EEPROM to Serial
+void printEEPROM(int eepromAddress) {
+    Serial.println("reading eeprom: " + String(eepromAddress));
+    for(long i = 0; i < EEPROM_SIZE_BYTES; i++) {
+        Serial.print(char(readFromEEPROM(i, eepromAddress)));
+    }
+    Serial.println("");
+}
