@@ -3,7 +3,7 @@
 // Define the software serial pins
 #define RX_PIN 8
 #define TX_PIN 9
-#define BUZZERPIN 6
+#define BUZZERPIN PD7
 
 #define fingerprintSerial Serial1
 Adafruit_Fingerprint finger = Adafruit_Fingerprint(&fingerprintSerial);
@@ -23,6 +23,8 @@ SoftwareSerial mySerial(RX_PIN, TX_PIN); // RX, TX
 #define XAXISPIN A1
 #define YAXISPIN A0
 #define DEBOUNCE 200   //ms
+volatile bool buzzerOn = false;
+
 
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);  // Adjust the address if necessary
@@ -100,10 +102,10 @@ void setup() {
   lcd.print("memory check");
   Serial.begin(115200);
   delay(4000);
-  pinMode(BUZZERPIN, OUTPUT);
+  setupBuzzer(BUZZER_PIN,700);
 
   Serial.print("memory check: ");
-  /*
+  
   if (memoryEqual(EEPROM1_ADDRESS, EEPROM2_ADDRESS)) {
     lcd.clear();
     lcd.setCursor(0, 0);
@@ -119,7 +121,7 @@ void setup() {
       Serial.println("please correct memory before going on");
       delay(1000);
     }
-  }*/
+  }
   passowords_in_memory = numberPasswordSaved(EEPROM1_ADDRESS);
 
 
@@ -132,16 +134,6 @@ void setup() {
     Serial.println("Did not find fingerprint sensor :(");
     while (1) { delay(1); }
   }
-
-  /*
-  Serial.println("testing retiriving function");
-  loadPasswords(currentPasswordIndex, passowords_in_memory, currentPasswordInDisplay);
-  printCredential(currentPasswordInDisplay[0]);
-  Serial.println("------------------------");
-  printCredential(currentPasswordInDisplay[1]);
-*/
-
-  delay(500);
 }
 
 void loop() {
