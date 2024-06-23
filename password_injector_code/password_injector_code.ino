@@ -22,7 +22,7 @@ SoftwareSerial mySerial(RX_PIN, TX_PIN); // RX, TX
 #define BUTTONPIN A2
 #define XAXISPIN A1
 #define YAXISPIN A0
-#define DEBAUNCE 200   //ms
+#define DEBOUNCE 200   //ms
 
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);  // Adjust the address if necessary
@@ -145,7 +145,7 @@ void setup() {
 }
 
 void loop() {
-  readJoystick(DEBAUNCE);
+  readJoystick(DEBOUNCE);
 
   if (refreshMenu) {
     loadPasswords(currentPasswordIndex, passowords_in_memory, &currentPasswordInDisplay);
