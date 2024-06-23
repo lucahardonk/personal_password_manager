@@ -39,7 +39,7 @@ extern int arrowPointing;
 #define BUTTONPIN A2
 #define XAXISPIN A1
 #define YAXISPIN A0
-#define DEBAUNCE 200   //ms
+#define DEBOUNCE 200   //ms
 
 // Function Declarations
 void eraseEEPROM(int eepromAddress);
