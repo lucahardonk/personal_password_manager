@@ -6,7 +6,8 @@
 #include <LiquidCrystal_I2C.h>
 #include <Adafruit_Fingerprint.h>
 #include <SoftwareSerial.h>
-
+#include <avr/io.h>
+#include <avr/interrupt.h>
 
 // Define the software serial pins
 #define RX_PIN 8
