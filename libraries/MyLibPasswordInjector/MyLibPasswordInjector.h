@@ -49,7 +49,7 @@ void replaceWhitespaceWithUnderscore(String &inputString);
 void safeStrCopy(char* dest, const char* src, size_t maxLen);
 void writeToEEPROM(int address, byte data, int eepromAddress);
 byte readFromEEPROM(int address, int eepromAddress);
-void writeCredentialToEEPROM(Credential cred, int startAddress, int eepromAddress);
+void writeCredentialToEEPROM(Credential &cred, int startAddress, int eepromAddress);
 void readCredentialFromEEPROM(Credential &cred, int startAddress, int eepromAddress);
 void printCredential(const Credential& credential);
 int findFirstFreeIndex(int eepromAddress);
