@@ -50,7 +50,7 @@ byte readFromEEPROM(int address, int eepromAddress) {
     return data;                             // Return read data
 }
 
-void writeCredentialToEEPROM(Credential cred, int startAddress, int eepromAddress) {
+void writeCredentialToEEPROM(Credential &cred, int startAddress, int eepromAddress) {
     byte* data = (byte*)&cred;
     for (int i = 0; i < sizeof(Credential); i++) {
         writeToEEPROM(startAddress + i, data[i], eepromAddress);
