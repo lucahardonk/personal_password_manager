@@ -6,7 +6,7 @@ This is the project for Embedded Software for the Internet of Things final exam 
 1) joystick
 2) lcd
 3) buzzer
-4) fingerprint sebsor
+4) fingerprint sensor
 5) Eeproms x2
 6) arduino leonardo
 7) arduino pro micro
